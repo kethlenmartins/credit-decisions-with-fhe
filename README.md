@@ -2,7 +2,7 @@
 
 > Projeto de pesquisa experimental | Criptografia avançada | Documentação em português | Código em inglês
 
-## 📜 Descrição do projeto
+## Descrição do projeto
 
 Este repositório investiga como a **precisão de quantização** de modelos de risco de crédito compatíveis com **Fully Homomorphic Encryption (FHE)** influencia a **estabilidade de decisões simuladas** e o **custo computacional da inferência cifrada**.
 
@@ -12,7 +12,7 @@ A proposta é comparar (1) um modelo de referência em ponto flutuante, (2) um m
 
 **Situação atual:** o download do UCI 350, o baseline e os testes automatizados foram executados. A árvore Concrete ML 1.9.0 também realizou inferência FHE real, primeiro em dados sintéticos e depois em uma observação predefinida do UCI 350. Nos dois smoke tests, as classes previstas coincidiram entre execução quantizada em claro, simulação e `fhe="execute"`. Isso não demonstra equivalência de probabilidades, desempenho no conjunto completo ou estabilidade decisória.
 
-## 🎯 Objetivos e escopo
+## Objetivos e escopo
 
 - Medir a influência da quantização nas métricas preditivas e nas decisões de crédito simuladas.
 - Investigar a concentração de discordâncias na vizinhança dos limiares de aprovação.
@@ -21,14 +21,14 @@ A proposta é comparar (1) um modelo de referência em ponto flutuante, (2) um m
 
 **Limites da pesquisa:** o dataset contém **clientes que já possuíam cartão** e resultados observados subsequentes, não novas solicitações com contrafactuais de aprovação. Portanto, este trabalho **não valida políticas reais de concessão nem estima efeitos causais**. A política é calculada **após** obter/decifrar os escores; não reivindicamos aprovação fim a fim cifrada.
 
-## 👩‍💻 Autoria
+## Autoria
 
 - Kethlen Martins — desenvolvimento e pesquisa.
 - Projeto acadêmico: Criptografia avançada.
 
 Orientação e demais colaboradores: preencher quando definidos.
 
-## 📁 Estrutura do repositório
+## Estrutura do repositório
 
 ```text
 fhe-credit-decision/
@@ -62,7 +62,7 @@ fhe-credit-decision/
 └── .gitignore
 ```
 
-## 🧰 Pré-requisitos
+## Pré-requisitos
 
 - Git, Python e `pip`, com suporte a `venv`.
 - Python 3.12.3 em Linux x86_64 foi a configuração usada no primeiro smoke test FHE. Outras versões devem ser verificadas antes da execução.
@@ -79,7 +79,7 @@ Dependências Python:
 
 > `requirements-fhe.txt` seleciona Concrete ML 1.9.0 e `requirements-fhe-lock.txt` registra o primeiro ambiente FHE executado. Registrar também versões e SHA-256 dos dados nas execuções UCI.
 
-## 🚀 Inicialização em um novo computador
+## Inicialização em um novo computador
 
 **1. Clonar o repositório privado**
 
@@ -121,7 +121,7 @@ PYTHONPATH=. python experiments/01_baseline.py
 python -m pytest -q
 ```
 
-## 🔐 Ambiente FHE reproduzido
+## Ambiente FHE reproduzido
 
 Crie um ambiente separado para não alterar o baseline. Os comandos abaixo reproduzem a configuração usada no smoke test em Linux x86_64:
 
@@ -155,7 +155,7 @@ Ele compara apenas rótulos do modelo float e do modelo Concrete ML com `n_bits=
 
 > Limitação conhecida: `python -m pip check` emite um aviso de plataforma para `xgboost==1.6.2`, embora o pacote, Concrete ML e os smoke tests tenham sido importados e executados neste ambiente. Registre esse aviso ao reproduzir o experimento.
 
-## 📚 Documentação e navegação
+## Documentação e navegação
 
 | O que você procura? | Onde encontrar |
 |---|---|
@@ -167,7 +167,7 @@ Ele compara apenas rótulos do modelo float e do modelo Concrete ML com `n_bits=
 | Fonte, download e integridade dos dados | [docs/dados.md](docs/dados.md) |
 | Scripts, políticas e benchmarks | `src/fhe_credit/`, `experiments/`, `tests/` |
 
-## 🧪 Metodologia resumida
+## Metodologia resumida
 
 1. Dividir os dados em treino/validação/teste (60/20/20, estratificados, semente 42).
 2. Treinar uma árvore rasa de referência; quantizar conforme suporte do Concrete ML.
@@ -178,7 +178,7 @@ Ele compara apenas rótulos do modelo float e do modelo Concrete ML com `n_bits=
 
 **Atenção metodológica:** o baseline exploratório já avaliou métricas na partição de teste. Antes dos experimentos confirmatórios, será necessário congelar parâmetros e protocolo sem usar essa partição para ajustar decisões; registrar o caráter exploratório desses resultados.
 
-## 🗃 Histórico de entregas
+## Histórico de entregas
 
 | Versão | Entrega | Estado |
 |---|---|---|
@@ -188,6 +188,6 @@ Ele compara apenas rótulos do modelo float e do modelo Concrete ML com `n_bits=
 | 0.4 | Grade de quantização, políticas e análise de sensibilidade | Planejado |
 | 1.0 | Artigo e experimentos reproduzíveis | Planejado |
 
-## 🔐 Integridade, privacidade e licença
+## Integridade, privacidade e licença
 
 Não publicar dados pessoais, arquivos `.env`, chaves criptográficas, notebooks com conteúdo sensível ou credenciais. Os dados públicos devem ser baixados da fonte original. Verificar licença e requisitos de citação antes de redistribuir artigos em PDF ou dados originais. **Nenhuma licença de software foi escolhida neste momento**; adicionar `LICENSE` quando a decisão for tomada.
