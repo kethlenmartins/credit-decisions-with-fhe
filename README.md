@@ -185,7 +185,3 @@ Ele compara apenas rótulos do modelo float e do modelo Concrete ML com `n_bits=
 | 0.3 | Smoke test FHE real, UCI com uma observação e snapshot do ambiente | Executado localmente |
 | 0.4 | Grade de quantização, políticas e análise de sensibilidade | Planejado |
 | 1.0 | Artigo e experimentos reproduzíveis | Planejado |
-
-## Integridade, privacidade e licença
-
-Não publicar dados pessoais, arquivos `.env`, chaves criptográficas, notebooks com conteúdo sensível ou credenciais. Os dados públicos devem ser baixados da fonte original. Verificar licença e requisitos de citação antes de redistribuir artigos em PDF ou dados originais. **Nenhuma licença de software foi escolhida neste momento**; adicionar `LICENSE` quando a decisão for tomada.
