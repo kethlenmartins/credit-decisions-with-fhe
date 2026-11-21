@@ -1,6 +1,0 @@
-reference,type,scheme,ml_models,dataset,metrics,main_contribution,limitations_to_verify,relevance
-Frery et al. (2023) Privacy-Preserving Tree-Based Inference with TFHE,preprint,TFHE,DT/RF/GBDT,multiple,accuracy/F1/AP/latency,Private tree inference via quantization and PBS,Decision-policy evaluation not primary focus,Core
-Yilmaz et al. (2026) Homomorphic Encryption in Finance,paper to verify,Concrete ML,XGBoost/RF,Turkish financial data,error/latency,Encrypted financial inference,Verify full methodology and publication status,Core
-Cong et al. Faster Private Decision Tree Evaluation for Batched Input,paper to verify,BFV,decision trees,benchmark datasets,latency/communication,Efficient batched private tree evaluation,Not a direct Concrete ML comparison,Core
-Shukla et al. (2026) FHE and Artificial Intelligence: A Review,review,multiple,multiple,review,Survey of FHE and AI,Verify publication status and coverage,Background
-Zama Concrete ML credit scoring,software example,TFHE,LR/DT/RF/XGB,HMEQ,accuracy/F1/latency,Reproducible example,Not peer-reviewed paper,Implementation baseline

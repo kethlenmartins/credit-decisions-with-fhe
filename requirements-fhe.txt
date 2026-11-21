@@ -1,3 +1,3 @@
-# Install only in a Python/Linux environment supported by your chosen Concrete ML release.
-# After smoke testing, replace with an exact, verified version pin.
-concrete-ml
+# Candidate selected for the first smoke test on Linux x86-64 / Python 3.12.
+# The complete resolved environment must be captured only after a successful FHE execution.
+concrete-ml==1.9.0
