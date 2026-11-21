@@ -1,7 +1,5 @@
 # FHE Credit Decision — Estabilidade de decisões de crédito com criptografia homomórfica
 
-> Projeto de pesquisa experimental | Criptografia avançada | Documentação em português | Código em inglês
-
 ## Descrição do projeto
 
 Este repositório investiga como a **precisão de quantização** de modelos de risco de crédito compatíveis com **Fully Homomorphic Encryption (FHE)** influencia a **estabilidade de decisões simuladas** e o **custo computacional da inferência cifrada**.
@@ -23,7 +21,7 @@ A proposta é comparar (1) um modelo de referência em ponto flutuante, (2) um m
 
 ## Autoria
 
-- Kethlen Martins — desenvolvimento e pesquisa.
+- Kethlen Martins e Daniel Augusto
 - Projeto acadêmico: Criptografia avançada.
 
 Orientação e demais colaboradores: preencher quando definidos.
