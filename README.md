@@ -1,4 +1,4 @@
-# FHE Credit Decision — Estabilidade de decisões de crédito com criptografia homomórfica
+# FHE Credit Decision: Estabilidade de decisões de crédito com criptografia homomórfica
 
 ## Descrição do projeto
 
