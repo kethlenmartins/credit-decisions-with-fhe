@@ -71,6 +71,7 @@ A matriz decisória é preliminar: critérios sem evidência suficiente ficaram 
 - Estimativa Aalen–Johansen: pendente de estimando concorrente final.
 - Profiling integral de alta cardinalidade, métricas completas de quantização e benchmarks FHE: pendentes de gates metodológicos; FHE não foi executado.
 - Licença/termos dos dois datasets: pendentes de confirmação local/documental.
+- A auditoria Freddie local cobre somente samples oficiais anuais de 50.000 empréstimos; não usar seus eventos absolutos para penalizar a viabilidade estatística do Full Dataset. Ver `freddie_mac_sample_vs_full.md`.
 
 ## Validação
 

@@ -6,6 +6,8 @@ Este relatório consolida auditoria estrutural e uma primeira análise de seguim
 
 ## Evidência estrutural
 
+Esta comparação distingue três alternativas: **Freddie Mac Sample Dataset** (os arquivos efetivamente auditados, 50.000 empréstimos por safra), **Freddie Mac Full Dataset** (não baixado) e LendingClub. A sample Freddie é uma amostra aleatória simples oficial do Standard Dataset, e não a população completa; detalhes, projeção de recursos e acesso estão em [freddie_mac_sample_vs_full.md](freddie_mac_sample_vs_full.md).
+
 As sete amostras Freddie Mac têm 50.000 empréstimos de originação cada. A performance contém entre 1.977.122 e 3.501.425 registros por safra; o pareamento interno por identificador não encontrou órfãos, duplicatas de ID de originação ou linhas malformadas. A cobertura mensal varia substancialmente por safra, portanto análises por horizonte não devem usar a simples ausência de evento como negativa.
 
 O LendingClub contém 2.260.701 linhas, 151 campos e 2.260.701 IDs únicos não ausentes. O arquivo tem estados ativos, encerrados e outros: o target de resultado final usa apenas `Fully Paid` (1.076.751) e `Charged Off` (268.559). Essa seleção exclui observações não definitivas e não permite inferir default em horizonte uniforme.
@@ -26,4 +28,4 @@ P01–P05 são apenas parcialmente fundamentáveis nos dados observados e não v
 
 ## Recomendação
 
-**Pendente.** Não é metodologicamente defensável pontuar ou escolher um dataset enquanto os termos de uso, a compatibilidade histórica do schema, a classificação documental de leakage e o estimando de target não estiverem confirmados. A matriz de decisão registra explicitamente notas `PENDING`, em vez de atribuir números arbitrários.
+**Pendente.** Não é metodologicamente defensável pontuar ou escolher um dataset enquanto os termos de uso, a compatibilidade histórica do schema, a classificação documental de leakage, o estimando de target e a capacidade do Full Dataset não estiverem confirmados. A matriz de decisão registra explicitamente notas `PENDING`, em vez de atribuir números arbitrários.
