@@ -1,0 +1,39 @@
+schema_version: "1.0"
+title: Configuração experimental versionada
+description: >
+  Schema declarativo de referência. A validação executável em
+  src/fhe_credit/configuration.py aplica tipos, valores permitidos e caminhos seguros.
+required:
+  - schema_version
+  - experiment_id
+  - configuration_id
+  - description
+  - scientific_status
+  - dependencies
+  - parameters
+  - input_artifacts
+  - execution
+  - publication
+properties:
+  schema_version:
+    const: "1.0"
+  experiment_id:
+    pattern: "^[a-z0-9][a-z0-9_-]{2,63}$"
+  configuration_id:
+    pattern: "^[a-z0-9][a-z0-9_-]{2,63}$"
+  scientific_status:
+    enum: [HISTORICAL, EXPLORATORY, PRELIMINARY, CONFIRMED]
+  dependencies:
+    type: array
+  parameters:
+    type: object
+  input_artifacts:
+    type: array
+  execution:
+    type: object
+    required: [mode]
+    properties:
+      mode:
+        enum: [analyze, execute]
+  publication:
+    enum: [PRIVATE, REVIEW_REQUIRED, PUBLIC_APPROVED]

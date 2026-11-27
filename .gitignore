@@ -1,14 +1,67 @@
+# Ambientes e caches locais
 .venv/
 .venv-fhe/
 venv/
 __pycache__/
 .pytest_cache/
 .ipynb_checkpoints/
+notebooks/.ipynb_checkpoints/
+notebooks/**/.ipynb_checkpoints/
+notebooks/.outputs/
+notebooks/**/outputs/
+experiments/**/.ipynb_checkpoints/
+*.nbconvert.ipynb
+
+# Dados e documentação restritos obtidos localmente
+/datasets/
+/ckksml/
 data/raw/*
+data/interim/*
 data/processed/*
-results/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
+
+# Execuções, resultados privados, checkpoints e logs
+results/*
 !results/.gitkeep
+!results/public/
+results/public/*
+!results/public/.gitkeep
+results/runs/
+results/private/
+experiments/**/results/runs/
+experiments/**/results/analyses/
+experiments/**/results/public/*
+!experiments/**/results/public/.gitkeep
+checkpoints/
+logs/
+state/
+*.log
+*.tmp
+
+# Predições individuais, identificadores e modelos ainda não revisados
+predictions/
+individual_predictions/
+loan_identifiers/
+models/
 *.pkl
+*.pickle
 *.joblib
+*.onnx
+
+# Chaves e artefatos de criptografia/compilação
+keys/
+*.key
+*.pem
+*.crt
+*.fhe
+*.mlir
+*.circuit
+build/
+
+# Configurações e manifestos locais que podem conter caminhos ou referências privadas
+configs/local/
+*.local.yaml
+*.local.yml
+*.secret.yaml
+*.secret.yml

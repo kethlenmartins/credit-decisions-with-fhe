@@ -1,0 +1,54 @@
+schema_version: "1.0"
+experiments:
+  - experiment_id: historical-fhe-smoke-synthetic
+    name: Smoke test FHE sintético histórico
+    area: historical
+    experiment_directory: experiments/historical/HIST02_fhe_synthetic_smoke
+    scientific_question: Verificação técnica histórica de coincidência de classes no circuito sintético.
+    hypothesis: null
+    dependencies: [Concrete ML 1.9.0]
+    configuration: experiments/historical/HIST02_fhe_synthetic_smoke/config.yaml
+    executor: experiments/02_fhe_smoke.py
+    notebook: experiments/historical/HIST02_fhe_synthetic_smoke/experiment.ipynb
+    status: HISTORICAL
+    expected_artifacts: [imported_report.json, import_record.json]
+    visibility: REVIEW_REQUIRED
+  - experiment_id: historical-fhe-uci-smoke
+    name: Smoke test FHE UCI histórico
+    area: historical
+    experiment_directory: experiments/historical/HIST03_fhe_uci_smoke
+    scientific_question: Verificação técnica histórica de coincidência de classes para uma observação UCI.
+    hypothesis: null
+    dependencies: [Concrete ML 1.9.0, numpy, pandas, scikit-learn]
+    configuration: experiments/historical/HIST03_fhe_uci_smoke/config.yaml
+    executor: experiments/03_fhe_uci_smoke.py
+    notebook: experiments/historical/HIST03_fhe_uci_smoke/experiment.ipynb
+    status: HISTORICAL
+    expected_artifacts: [imported_report.json, import_record.json]
+    visibility: REVIEW_REQUIRED
+  - experiment_id: synthetic-executor-smoke
+    name: Prova sintética do executor
+    area: library_validation
+    experiment_directory: experiments/02_library_validation/synthetic_executor_smoke
+    scientific_question: Verificar a infraestrutura com vetores artificiais, sem afirmação científica.
+    hypothesis: null
+    dependencies: []
+    configuration: configs/experiments/synthetic_executor_smoke.yaml
+    executor: src/fhe_credit/experiments/adapters.py
+    notebook: null
+    status: EXPLORATORY
+    expected_artifacts: [effective_config.json, environment.json, metrics.json, adapter_output.json]
+    visibility: PRIVATE
+  - experiment_id: hist01-uci-plaintext-baseline
+    name: HIST01 — baseline UCI em texto claro
+    area: historical
+    experiment_directory: experiments/historical/HIST01_uci_plaintext_baseline
+    scientific_question: Recuperar e reproduzir o baseline histórico UCI em texto claro.
+    hypothesis: null
+    dependencies: [numpy, pandas, scikit-learn]
+    configuration: experiments/historical/HIST01_uci_plaintext_baseline/config.yaml
+    executor: src/fhe_credit/experiments/adapters.py
+    notebook: experiments/historical/HIST01_uci_plaintext_baseline/experiment.ipynb
+    status: HISTORICAL
+    expected_artifacts: [metrics.json, split_summary.json, predictions.csv]
+    visibility: PRIVATE
