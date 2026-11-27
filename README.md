@@ -185,3 +185,17 @@ Ele compara apenas rótulos do modelo float e do modelo Concrete ML com `n_bits=
 | 0.3 | Smoke test FHE real, UCI com uma observação e snapshot do ambiente | Executado localmente |
 | 0.4 | Grade de quantização, políticas e análise de sensibilidade | Planejado |
 | 1.0 | Artigo e experimentos reproduzíveis | Planejado |
+
+## Execução reproduzível por unidade experimental
+
+O registro ativo de unidades está em [experiments/registry.yaml](experiments/registry.yaml). Para usar o interpretador local disponível, prefira `venv/bin/python`; não presuma que `python` esteja no `PATH`.
+
+```bash
+PYTHONPATH=src venv/bin/python -m fhe_credit.experiments list
+PYTHONPATH=src venv/bin/python -m fhe_credit.experiments plan --config experiments/historical/HIST01_uci_plaintext_baseline/config.yaml
+PYTHONPATH=src venv/bin/python -m fhe_credit.experiments run --config experiments/historical/HIST01_uci_plaintext_baseline/config.yaml --execute
+```
+
+O último comando requer os dados UCI locais e cria uma execução privada com `Run ID` na unidade HIST01. Para verificar uma execução, use `analyze` ou `verify` com o ID explícito. Veja [REPRODUCIBILITY.md](REPRODUCIBILITY.md) e [experiments/README.md](experiments/README.md).
+
+Os smoke tests históricos estão organizados como HIST02 e HIST03. Seus relatórios legados podem ser importados para um Run ID novo sem executar FHE; os resultados continuam históricos e não são benchmarks. O procedimento completo para novas unidades está em [experiments/README.md](experiments/README.md).
