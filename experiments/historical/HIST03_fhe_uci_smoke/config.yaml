@@ -1,0 +1,20 @@
+schema_version: "1.0"
+experiment_id: historical-fhe-uci-smoke
+configuration_id: cfg-historical-fhe-uci-smoke-import-v1
+description: >
+  Importação verificável do relatório histórico de smoke test FHE UCI; não executa
+  Concrete ML, não compila circuito e não gera chaves.
+scientific_status: HISTORICAL
+dependencies: [numpy, pandas, scikit-learn, concrete-ml==1.9.0]
+parameters:
+  known_missing_metadata: [timestamp_original, manifest_original, split_indices, selected_observation, individual_predictions, probabilities, model_artifact, circuit_artifact, keys]
+  provenance_limitations: O hash é calculado na importação e não é um hash registrado na execução histórica.
+input_artifacts:
+  - path: results/03_fhe_uci_smoke.json
+    role: legacy_report
+    required: true
+execution:
+  mode: execute
+  adapter: legacy-report-import-v1
+  checkpointing: false
+publication: REVIEW_REQUIRED

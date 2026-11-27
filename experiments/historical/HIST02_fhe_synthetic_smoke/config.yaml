@@ -1,0 +1,24 @@
+schema_version: "1.0"
+experiment_id: historical-fhe-smoke-synthetic
+configuration_id: cfg-historical-fhe-smoke-synthetic-import-v1
+description: >
+  Espelho local da configuração registrada para importar o relatório legado do
+  smoke test sintético sem executar FHE, compilar circuitos ou gerar chaves.
+scientific_status: HISTORICAL
+dependencies: [concrete-ml==1.9.0, numpy]
+parameters:
+  seed: 42
+  n_bits: 3
+  training_observations: 100
+  inference_observations: 2
+  known_missing_metadata: [timestamp_original, manifest_original, input_vectors, individual_predictions, probabilities, model_artifact, circuit_artifact, keys]
+  provenance_limitations: O hash é calculado na importação e não é um hash registrado na execução histórica.
+input_artifacts:
+  - path: results/02_fhe_smoke.json
+    role: legacy_report
+    required: true
+execution:
+  mode: execute
+  adapter: legacy-report-import-v1
+  checkpointing: false
+publication: REVIEW_REQUIRED

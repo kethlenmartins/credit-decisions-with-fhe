@@ -1,0 +1,39 @@
+schema_version: "1.0"
+experiment_id: hist01-uci-plaintext-baseline
+configuration_id: cfg-hist01-uci-plaintext-baseline-v1
+description: >
+  Recuperação da configuração embutida em experiments/01_baseline.py. Histórico,
+  exploratório e restrito ao UCI 350; não representa Freddie Mac.
+scientific_status: HISTORICAL
+dependencies: [numpy, pandas, scikit-learn]
+parameters:
+  seed: 42
+  data_root: data/raw
+  features_file: features.csv
+  target_file: target.csv
+  drop_columns: [ID]
+  split:
+    first_test_size: 0.4
+    second_test_size: 0.5
+    stratify: true
+  model:
+    class: DecisionTreeClassifier
+    max_depth: 3
+    min_samples_leaf: 100
+    random_state: 42
+  policy:
+    name: cutoff
+    threshold: 0.2
+  metrics: [roc_auc, average_precision, brier, approval_rate_at_0.2]
+input_artifacts:
+  - path: data/raw/features.csv
+    role: features
+    required: true
+  - path: data/raw/target.csv
+    role: target
+    required: true
+execution:
+  mode: execute
+  adapter: hist01-uci-plaintext-baseline-v1
+  checkpointing: false
+publication: PRIVATE

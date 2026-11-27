@@ -1,0 +1,5 @@
+schema_version: "1.0"
+registry_redirect: experiments/registry.yaml
+note: >
+  Compatibilidade de transição. O registro ativo está em experiments/registry.yaml;
+  este arquivo não contém entradas independentes.
