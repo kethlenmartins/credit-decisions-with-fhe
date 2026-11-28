@@ -1,384 +1,305 @@
-# Estabilidade decisória e custos computacionais na inferência de risco de crédito com criptografia totalmente homomórfica
+# Estabilidade Decisória sob Perturbações Numéricas na Inferência Homomórfica de Risco de Crédito
 
-Autora: Kethlen Martins da Silva
+Kethlen Martins da Silva
+
+**Resumo.** A definir.
+
+**Palavras-chave:** A definir.
 
 ## 1. Introdução
 
-Modelos de aprendizado de máquina podem estimar risco de inadimplência a partir de históricos de pagamento e informações financeiras. Esses scores podem apoiar a concessão de crédito, a definição de limites e o acompanhamento de carteiras. O uso desses dados, porém, cria um problema de confidencialidade: o provedor que executa a inferência pode ter acesso a informações sensíveis dos clientes de instituições financeiras.
+Modelos de aprendizado de máquina são utilizados na estimativa do risco de crédito e no suporte a decisões financeiras. Entretanto, o processamento de informações sensíveis em infraestruturas externas apresenta desafios relacionados à confidencialidade dos dados.
 
-Criptografia convencional protege dados em repouso e em trânsito, mas não resolve esse problema durante o processamento. Em uma arquitetura usual, o dado precisa estar em texto claro no ambiente que executa o modelo. A criptografia totalmente homomórfica (*Fully Homomorphic Encryption*, FHE) permite avaliar operações sobre dados cifrados, e o resultado só é recuperado após a decifragem. Essa propriedade interessa quando a instituição pretende usar infraestrutura externa sem entregar os dados brutos ao provedor.
+A criptografia totalmente homomórfica (FHE) permite realizar operações sobre dados cifrados sem exigir sua decifragem pela entidade responsável pela computação. Sua aplicação à inferência de modelos preditivos pode envolver adaptações na representação numérica dos dados e das operações realizadas pelo modelo.
 
-O ganho de confidencialidade tem custo. A inferência FHE é mais lenta que a inferência convencional e os circuitos aceitam representações numéricas restritas. Os modelos precisam, portanto, ser adaptados. Uma adaptação frequente é a quantização, que converte valores de maior precisão em valores discretos com número limitado de bits.
+No contexto de crédito, as previsões produzidas por um modelo podem ser utilizadas como entradas de políticas de decisão, determinando, por exemplo, a aprovação de uma operação ou suas condições financeiras. Dessa forma, diferenças numéricas entre as previsões de um modelo convencional e de sua versão adaptada à inferência homomórfica podem resultar em decisões distintas.
 
-Em risco de crédito, não basta comparar métricas agregadas. Uma pequena alteração no score pode mudar a decisão de um cliente próximo ao limiar de aprovação. Duas configurações podem, assim, apresentar métricas semelhantes e aprovar conjuntos diferentes de clientes. Neste trabalho, estabilidade decisória é o grau de concordância entre decisões produzidas por configurações diferentes do mesmo pipeline.
+Este trabalho investiga como as propriedades das políticas de decisão de crédito influenciam os efeitos das perturbações numéricas associadas à inferência homomórfica, considerando os compromissos entre estabilidade decisória, impacto econômico e eficiência computacional.
 
-Estudos anteriores já mostraram inferência criptografada com árvores e redes neurais. Este trabalho examina como a precisão numérica afeta previsões, decisões simuladas e custo computacional em modelos de risco de crédito compatíveis com FHE.
-
-### 1.1. Problema e pergunta de pesquisa
-
-O problema é escolher configurações de inferência criptografada que preservem a confidencialidade, mantenham decisões estáveis e tenham custo computacional viável.
-
-A pergunta central da pesquisa é:
-
-**Como a precisão de quantização de modelos de risco de crédito compatíveis com criptografia totalmente homomórfica afeta a estabilidade das decisões de concessão e o custo computacional da inferência criptografada?**
-
-Para responder a essa pergunta, foram definidas quatro questões de pesquisa:
-
-- **QP1:** Como diferentes precisões de quantização afetam o desempenho preditivo, a calibração e a consistência das previsões?
-- **QP2:** Como diferentes políticas simuladas de aprovação de crédito influenciam a discordância decisória entre configurações do modelo?
-- **QP3:** Qual é o custo computacional da inferência criptografada em comparação com a execução quantizada em claro?
-- **QP4:** Quais configurações apresentam compromissos mais favoráveis entre precisão numérica, estabilidade decisória e custo computacional?
-
-### 1.2. Hipóteses
-
-A pesquisa foi organizada em torno de três hipóteses:
-
-**H1: sensibilidade decisória à quantização.** A redução da precisão numérica pode modificar decisões simuladas de crédito mesmo quando as diferenças nas métricas agregadas de classificação são pequenas.
-
-**H2: concentração das discordâncias nas fronteiras de decisão.** As divergências entre decisões produzidas por diferentes configurações tendem a se concentrar em observações cujas estimativas de risco estão próximas dos limiares estabelecidos pelas políticas de aprovação.
-
-**H3: compromisso entre estabilidade e custo computacional.** Diferentes configurações de quantização apresentam compromissos entre fidelidade preditiva, estabilidade decisória e latência de inferência FHE, possibilitando a identificação de alternativas com características distintas de custo e desempenho.
-
-Essas hipóteses serão avaliadas em etapas experimentais posteriores. A primeira etapa, apresentada neste artigo parcial, concentra-se na preparação da infraestrutura, na implementação do modelo de referência e na validação inicial da inferência criptografada.
-
-### 1.3. Objetivos
-
-O objetivo geral é medir como a precisão numérica afeta a estabilidade de decisões simuladas de crédito e o custo de modelos executados com FHE. Para isso, o estudo prepara um ambiente reproduzível, implementa modelos compatíveis com FHE e compara inferência convencional, quantizada e cifrada.
-
-A contribuição pretendida é relacionar propriedades do pipeline de inferência às decisões derivadas dos scores. É importante notar que o estudo não pretende demonstrar uma política bancária real.
+A investigação restringe-se à inferência sobre dados cifrados, mantendo o treinamento dos modelos em texto claro. Nesta etapa, a avaliação experimental concentra-se em uma árvore de decisão adaptada à biblioteca Concrete ML e em políticas de decisão por limiar.
 
 ## 2. Trabalhos relacionados
 
-A literatura sobre aprendizado de máquina com preservação de privacidade apresenta diferentes abordagens para a execução de modelos sobre informações sensíveis. Entre elas, a criptografia homomórfica destaca-se pela possibilidade de realizar operações diretamente sobre dados cifrados. Os trabalhos selecionados nesta revisão abordam fundamentos arquiteturais, inferência protegida com árvores de decisão, otimizações computacionais e aplicações financeiras.
+Frery et al. (2023) investigam a inferência privada de modelos baseados em árvores utilizando TFHE. O trabalho utiliza representações quantizadas e mecanismos de bootstrapping programável para realizar a avaliação homomórfica desses modelos.
 
-Frery et al. (2023), em *Privacy-Preserving Tree-Based Inference with TFHE*, apresentam uma abordagem para inferência privada de modelos baseados em árvores utilizando o esquema criptográfico TFHE. O método explora representações inteiras quantizadas e o mecanismo de *programmable bootstrapping* para viabilizar a avaliação de árvores de decisão, florestas aleatórias e modelos de *gradient boosting* sobre dados cifrados. Os autores analisam a relação entre precisão numérica, desempenho preditivo e latência, demonstrando que a escolha da quantização constitui uma variável importante para a eficiência do processamento. O trabalho fornece a principal fundamentação técnica para a utilização de árvores no presente estudo, além de evidenciar a necessidade de avaliar conjuntamente fidelidade preditiva e custo criptográfico. Entretanto, seu foco está na implementação e no desempenho dos modelos, e não especificamente nas consequências das diferenças preditivas para políticas de concessão de crédito.
+Cong et al. investigam a avaliação privada de árvores de decisão sobre entradas cifradas em lote, considerando a eficiência computacional e de comunicação.
 
-Yılmaz et al. (2026), em *Homomorphic Encryption in Finance: Training and Inference on Encrypted Data with Concrete ML*, investigam o emprego de Concrete ML em aplicações de análise financeira. Os autores utilizam modelos de Random Forest e XGBoost em tarefas relacionadas a indicadores de dificuldades financeiras, incluindo Altman Z-Score, L-Score e Zmijewski Score. Os experimentos comparam desempenho preditivo e tempos computacionais de implementações convencionais e protegidas, identificando custos elevados de inferência criptografada e diferenças de desempenho associadas às configurações utilizadas. Apesar de o título mencionar treinamento sobre dados cifrados, a descrição metodológica apresenta modelos treinados sobre dados abertos e inferência criptografada, distinção importante para delimitar o escopo técnico da abordagem. O estudo demonstra a relevância de FHE no domínio financeiro, mas não investiga diretamente a estabilidade de decisões individuais produzidas a partir de limiares de risco.
+No domínio financeiro, Yılmaz et al. (2026) investigam a aplicação de criptografia homomórfica em tarefas de classificação financeira utilizando Concrete ML. Allavarpu et al. (2025) apresentam uma abordagem baseada em redes neurais e criptografia homomórfica aplicada à análise de risco de crédito.
 
-Cong et al., em *Faster Private Decision Tree Evaluation for Batched Input from Homomorphic Encryption*, propõem protocolos para avaliação privada e não interativa de árvores de decisão sobre lotes de entradas cifradas. O trabalho introduz estratégias de comparação entre valores cifrados e limiares em texto claro, incluindo comparadores baseados em *range cover* e representações de peso constante. Os autores também propõem uma adaptação do procedimento de percurso da árvore, buscando reduzir custos de comunicação e processamento. Seus resultados demonstram ganhos de eficiência em cenários de avaliação em lote, evidenciando que a organização do circuito e das operações criptográficas influencia significativamente a escalabilidade. Embora a implementação não constitua uma comparação direta com o pipeline Concrete ML adotado nesta pesquisa, o trabalho contribui para compreender possíveis estratégias futuras de otimização e os limites de extrapolar resultados de uma única inferência para cenários de produção.
+O presente trabalho concentra-se na avaliação das decisões derivadas das previsões produzidas por modelos adaptados à inferência homomórfica.
 
-Allavarpu, Naresh e Mohan (2025), em *Neural Network-Driven Privacy-Preserving Credit Risk Analysis: A Homomorphic Encryption Approach*, investigam uma arquitetura de análise de risco de crédito com preservação de privacidade baseada em redes neurais e criptografia homomórfica. A implementação utiliza bibliotecas como TenSEAL e PyTorch para realizar processamento protegido de informações financeiras. O estudo apresenta experimentos com conjuntos de dados de crédito de diferentes origens e discute o desempenho dos modelos em condições convencionais e criptografadas. Sua principal contribuição para esta pesquisa é demonstrar que a aplicação de criptografia homomórfica à análise de risco de crédito já constitui uma linha de investigação existente. Dessa forma, a contribuição pretendida pelo presente trabalho deve ser delimitada não como a introdução inédita de FHE no domínio de crédito, mas como uma análise específica da relação entre quantização, estabilidade das decisões simuladas e custo computacional.
+## 3. Fundamentação
 
-Shukla, Pandya e Samanth (2026), em *Fully Homomorphic Encryption and Artificial Intelligence: A Review of Architectures, Optimizations, and Distributed Privacy*, apresentam uma revisão das arquiteturas e técnicas de otimização utilizadas na integração entre FHE e inteligência artificial. Os autores discutem limitações relacionadas à latência, expansão dos dados cifrados e utilização de recursos computacionais, além de examinar estratégias de aceleração por hardware, processamento em lote e integração com sistemas distribuídos. A revisão também distingue a inferência sobre dados cifrados do treinamento homomórfico, ressaltando que essas tarefas apresentam requisitos computacionais diferentes. O trabalho contribui para a fundamentação conceitual e para a delimitação do escopo desta pesquisa, que se concentra na inferência criptografada de modelos previamente treinados, sem propor treinamento integralmente homomórfico.
+### 3.1. Inferência homomórfica e representação numérica
 
-### 2.1. Síntese dos trabalhos relacionados
+A criptografia homomórfica permite realizar operações sobre dados cifrados de modo que, após a decifragem, seja possível recuperar o resultado correspondente à computação realizada, conforme as propriedades do esquema utilizado.
 
-Os estudos analisados demonstram avanços relevantes na viabilização da inferência criptografada e na redução de seus custos computacionais. Frery et al. (2023) e Cong et al. contribuem diretamente para a compreensão de mecanismos de avaliação privada de árvores, enquanto Yılmaz et al. (2026) e Allavarpu et al. (2025) evidenciam aplicações financeiras de modelos protegidos por criptografia homomórfica. Shukla et al. (2026), por sua vez, sistematizam desafios arquiteturais e oportunidades de otimização.
+A adaptação de modelos de aprendizado de máquina à inferência homomórfica depende das operações e representações numéricas suportadas pela implementação criptográfica.
 
-Em conjunto, esses trabalhos sustentam a viabilidade técnica da abordagem proposta, mas apresentam ênfases distintas. Parte da literatura concentra-se em fidelidade preditiva, tempo de execução ou eficiência criptográfica; outra parte demonstra aplicações de aprendizado de máquina protegido em problemas financeiros. A presente pesquisa propõe integrar essas perspectivas por meio de uma avaliação que considere também as decisões derivadas das previsões. A lacuna investigada é, portanto, a relação entre escolhas de precisão numérica, discordância em políticas simuladas de crédito e custo computacional da inferência FHE, sem pressupor que essa relação esteja inteiramente ausente da literatura.
+O Concrete ML utiliza representações quantizadas para adaptar modelos preditivos à computação homomórfica baseada em TFHE. A quantização representa valores numéricos por meio de um conjunto discreto de valores, cuja granularidade depende da configuração utilizada.
 
-### 2.2. Quadro comparativo
+Essa adaptação pode produzir diferenças entre as previsões do modelo original e aquelas obtidas pelo modelo quantizado. A análise dessas diferenças deve distinguir os efeitos da adaptação numérica daqueles associados à execução criptográfica.
 
-| Trabalho | Abordagem | Contexto experimental | Principal contribuição | Relação com a presente pesquisa |
-|---|---|---|---|---|
-| Frery et al. (2023) | TFHE e árvores quantizadas | Classificação com árvores, florestas e boosting | Inferência privada baseada em árvores e análise de precisão/latência | Fundamenta o modelo e a variação de `n_bits` |
-| Yılmaz et al. (2026) | Concrete ML, Random Forest e XGBoost | Indicadores de dificuldades financeiras | Avaliação de desempenho e custo da inferência protegida em finanças | Referência de aplicação financeira e comparação computacional |
-| Cong et al. | HE e avaliação de árvores em lote | Inferência privada não interativa | Otimizações de comparação, percurso e comunicação | Fundamenta discussões de escalabilidade |
-| Allavarpu et al. (2025) | Redes neurais, TenSEAL e PyTorch | Análise de risco de crédito | Aplicação de inferência protegida ao domínio de crédito | Delimita a contribuição específica do estudo |
-| Shukla et al. (2026) | Revisão de arquiteturas FHE e IA | Diferentes aplicações e técnicas | Sistematização de limitações e otimizações | Fundamenta escolhas arquiteturais e limitações |
+### 3.2. Políticas de decisão de crédito
 
-## 3. Metodologia
+Um modelo preditivo de risco de crédito produz estimativas que podem ser utilizadas como entradas de políticas de decisão.
 
-A pesquisa é experimental e quantitativa. A primeira etapa preparou o ambiente, selecionou o conjunto de dados, implementou o modelo de referência e verificou a inferência FHE com Concrete ML. O projeto usa Python, código modular, scripts experimentais e testes automatizados; dados brutos e resultados gerados ficam fora do versionamento.
+Neste trabalho, uma política de decisão é compreendida como uma regra que transforma previsões e informações contextuais em decisões financeiras.
 
-### 3.1. Ambiente computacional e dependências
+Seja $p_i$ a previsão de risco associada à observação $i$ e $z_i$ o conjunto de informações contextuais utilizadas pela política. A decisão correspondente pode ser representada por
 
-A implementação foi realizada em um computador com sistema operacional Linux, arquitetura x86_64 e processador Intel Core i5-1335U, utilizando Python 3.12.3.
+$$
+d_i=\pi(p_i,z_i),
+$$
 
-Foram utilizadas bibliotecas de manipulação de dados e aprendizado de máquina, incluindo NumPy, pandas e scikit-learn. A obtenção dos dados foi realizada com `ucimlrepo`, enquanto a implementação de inferência criptografada utilizou Concrete ML 1.9.0.
+em que $\pi$ representa a política de decisão.
 
-A configuração registrada para a primeira execução FHE incluiu NumPy 1.26.4 e scikit-learn 1.5.0. As dependências foram organizadas em arquivos de requisitos, com um ambiente virtual específico para a execução dos experimentos criptográficos.
+Nesta etapa, considera-se uma política binária de aprovação por limiar, definida como
 
-Durante a preparação, foi identificado um aviso de compatibilidade relacionado ao pacote XGBoost 1.6.2 na verificação de dependências. Apesar desse aviso, a importação das bibliotecas e as execuções iniciais com Concrete ML foram concluídas. A ocorrência foi documentada como uma limitação do ambiente, sem assumir que o aviso não possa afetar outras configurações experimentais.
+$$
+d_i(\tau)=\mathbb{1}[p_i\leq\tau],
+$$
 
-### 3.2. Seleção e preparação do conjunto de dados
+em que $\tau$ representa o limiar de aprovação, 1 representa aprovação e 0 representa rejeição.
 
-Foi selecionado o conjunto de dados *Default of Credit Card Clients*, disponibilizado pelo UCI Machine Learning Repository sob o identificador 350. O conjunto contém 30.000 observações e 23 variáveis preditoras, relacionadas a características e ao histórico financeiro de clientes de cartão de crédito.
+A política é utilizada como instrumento de análise experimental, sem representar necessariamente uma regra operacional de concessão de crédito.
 
-A variável-alvo indica a ocorrência de inadimplência no mês seguinte, caracterizando uma tarefa de classificação binária.
+### 3.3. Perturbações numéricas e estabilidade decisória
 
-A escolha se deve ao uso recorrente do conjunto em previsão de inadimplência, às variáveis tabulares e ao download reproduzível a partir de fonte pública.
+Sejam $p_i$ e $\hat{p}_i$ as previsões correspondentes do modelo de referência e do modelo adaptado à inferência homomórfica, respectivamente.
 
-O script de download registra proveniência e hashes SHA-256. Esses metadados identificam os arquivos usados em cada execução.
+A perturbação numérica é definida como
 
-As observações foram divididas de maneira estratificada em três subconjuntos, utilizando semente aleatória 42:
+$$
+\varepsilon_i=\hat{p}_i-p_i.
+$$
 
-| Subconjunto | Proporção | Observações |
-|---|---:|---:|
-| Treinamento | 60% | 18.000 |
-| Validação | 20% | 6.000 |
-| Teste | 20% | 6.000 |
-| **Total** | **100%** | **30.000** |
+A magnitude das diferenças entre as previsões é avaliada por meio do erro absoluto médio (MAE):
 
-O conjunto de treinamento foi destinado ao ajuste dos modelos, enquanto a validação foi reservada para escolhas metodológicas e de configuração. O conjunto de teste foi utilizado nas verificações exploratórias iniciais, fato que será considerado nas etapas posteriores para evitar seleção de parâmetros orientada pelos resultados de teste.
+$$
+\mathrm{MAE}=
+\frac{1}{N}
+\sum_{i=1}^{N}|p_i-\hat{p}_i|.
+$$
 
-É importante observar que o conjunto representa clientes que já possuem cartão de crédito. Consequentemente, futuras regras de aprovação implementadas nesta pesquisa deverão ser interpretadas como políticas simuladas sobre uma população histórica, e não como avaliações causais de concessão de crédito a novos solicitantes.
+Para avaliar os efeitos dessas diferenças sobre as decisões, utiliza-se a taxa de discordância decisória (DDR, do inglês Decision Disagreement Rate), definida como
 
-### 3.3. Modelo de referência
+$$
+D(\tau)=
+\frac{1}{N}
+\sum_{i=1}^{N}
+\mathbb{1}[d_i(\tau)\neq\hat{d}_i(\tau)],
+$$
 
-Como referência inicial, foi implementado um classificador baseado em árvore de decisão, utilizando `DecisionTreeClassifier` da biblioteca scikit-learn.
+em que $d_i(\tau)$ e $\hat{d}_i(\tau)$ representam as decisões obtidas a partir das previsões de referência e perturbada, respectivamente.
 
-A configuração exploratória adotou profundidade máxima igual a três e número mínimo de 100 observações por folha. A escolha de uma árvore rasa buscou estabelecer um modelo de complexidade controlada, adequado à etapa inicial de desenvolvimento e à posterior comparação com implementações compatíveis com FHE.
+Uma perturbação pode alterar a decisão quando desloca a previsão de uma região decisória para outra. Assim, a estabilidade depende tanto da magnitude do erro numérico quanto da posição das previsões em relação ao limiar.
 
-O modelo foi avaliado utilizando métricas de classificação binária: área sob a curva ROC (*ROC-AUC*), precisão média (*Average Precision*) e Brier Score. Também foi calculada, de maneira exploratória, a proporção de observações aprovadas por uma política hipotética baseada em limiar de probabilidade de inadimplência de 0,20.
+Para previsões pertencentes ao intervalo $[0,1]$, a discordância individual ocorre em um intervalo de limiares cujo comprimento é igual a $|p_i-\hat{p}_i|$. Somando esses intervalos para todas as observações, obtém-se
 
-A avaliação inicial teve caráter exploratório e não foi utilizada como evidência de superioridade do modelo ou de adequação financeira da política simulada.
+$$
+\int_0^1D(\tau)\,d\tau=\mathrm{MAE}.
+$$
 
-### 3.4. Implementação da inferência homomórfica
+Essa relação permite interpretar o erro absoluto médio como uma medida integrada de discordância decisória. Entretanto, um erro absoluto médio reduzido não determina a magnitude da discordância em um limiar específico.
 
-Para validar a viabilidade da inferência criptografada, foi utilizada a biblioteca Concrete ML, que permite construir modelos de aprendizado de máquina compatíveis com operações homomórficas.
+## 4. Metodologia
 
-O procedimento inicial foi organizado em duas verificações.
+### 4.1. Conjunto de dados
 
-A primeira consistiu em um *smoke test* com dados sintéticos, utilizando uma árvore de decisão pequena. O objetivo foi verificar o funcionamento do pipeline de treinamento, compilação e inferência, sem depender inicialmente da complexidade do conjunto de dados financeiro.
+Foram utilizadas amostras anuais do Freddie Mac Single-Family Loan-Level Dataset, que disponibiliza informações de originação e acompanhamento mensal de empréstimos imobiliários.
 
-A segunda verificação utilizou o UCI 350, mantendo a divisão previamente definida e adotando uma configuração Concrete ML com `n_bits=3`. O experimento selecionou uma observação de teste predefinida para verificar a execução do modelo em três modalidades:
+A variável-alvo corresponde à ocorrência observada de atraso igual ou superior a 90 dias nos primeiros 12 meses após a data programada do primeiro pagamento.
 
-- **Execução quantizada em claro (`fhe="disable"`):** inferência do modelo Concrete ML sem criptografia.
-- **Simulação FHE (`fhe="simulate"`):** execução simulada do circuito compilado.
-- **Execução FHE real (`fhe="execute"`):** inferência com operações efetivamente realizadas sobre dados cifrados.
+Observações com acompanhamento insuficiente ou desfecho indeterminado foram excluídas conforme os critérios de elegibilidade experimental.
 
-A comparação das saídas teve como objetivo verificar se as modalidades produziam a mesma classe para as observações selecionadas.
+As variáveis preditoras utilizadas correspondem a informações disponíveis na originação dos empréstimos:
 
-A implementação também contemplou a persistência de resultados experimentais em arquivos JSON e CSV, contendo informações sobre a configuração, as saídas comparadas e os tempos de execução.
+- Escore de crédito;
+- Razão entre dívida e renda;
+- Razão entre financiamento e valor do imóvel;
+- Razão combinada entre financiamento e valor do imóvel;
+- Saldo principal original;
+- Prazo contratual;
+- Número de mutuários.
 
-### 3.5. Medição de desempenho computacional
+O conjunto de teste temporal de 2021 compreende 49.916 empréstimos elegíveis, com prevalência aproximada de 0,43% para o evento investigado.
 
-Foram instrumentadas medições de tempo para treinamento, compilação, inferência quantizada em claro, simulação FHE e inferência FHE real.
 
-As medições de inferência foram obtidas por meio da API de alto nível do Concrete ML. Dessa forma, o tempo associado à execução FHE representa o tempo total observado para a chamada de predição criptografada, não sendo possível, nessa implementação inicial, separar os custos de geração de chaves, cifragem, avaliação homomórfica e decifragem.
+### 4.2. Modelo preditivo
 
-Os tempos foram registrados em segundos. Como os resultados iniciais correspondem a execuções isoladas, não foram calculados intervalos de confiança ou medidas de dispersão.
+Foi utilizada uma árvore de decisão implementada com a biblioteca scikit-learn, com profundidade máxima igual a três e mínimo de 100 observações por folha.
 
-### 3.6. Validação e testes
+O modelo foi treinado em texto claro e posteriormente adaptado à biblioteca Concrete ML, versão 1.9.0.
 
-Foram implementados testes automatizados para verificar o funcionamento das políticas simuladas de crédito e das funções auxiliares de comparação e persistência de resultados.
+A utilização do mesmo modelo treinado como referência permite avaliar as diferenças associadas à adaptação numérica sem introduzir diferenças decorrentes do treinamento de modelos independentes.
 
-A validação também incluiu verificações de sintaxe e consistência dos arquivos de código. Ao final da primeira etapa, sete testes automatizados foram executados com sucesso.
+### 4.3. Configuração experimental
 
-A validação do pipeline criptográfico foi realizada adicionalmente por meio das execuções reais dos scripts experimentais, distinguindo testes unitários de evidências de funcionamento da inferência FHE.
+A avaliação distingue quatro modalidades de inferência:
 
-## 4. Resultados iniciais
+1. Inferência convencional em ponto flutuante;
+2. Inferência quantizada em texto claro;
+3. Simulação do circuito homomórfico;
+4. Inferência homomórfica real.
 
-Esta seção apresenta os resultados obtidos durante a primeira etapa de desenvolvimento. Os experimentos realizados tiveram como objetivo verificar a viabilidade técnica da abordagem e estabelecer valores de referência para as etapas seguintes.
+Inicialmente, foram avaliadas configurações de quantização entre 3 e 12 bits sobre um subconjunto de 10.000 observações.
 
-Os resultados ainda não constituem uma avaliação sistemática dos efeitos da quantização sobre o comportamento decisório.
+Posteriormente, as configurações de 3, 7, 8, 9, 10 e 12 bits foram avaliadas em texto claro quantizado sobre o conjunto de teste completo.
 
-### 4.1. Desempenho do modelo convencional
+As configurações de 9 e 10 bits também foram avaliadas mediante simulação e execução homomórfica real sobre cinco observações selecionadas de maneira determinística.
 
-A primeira execução do modelo de referência sobre o UCI 350 produziu os resultados apresentados na Tabela 3.
+<!--
+Complementar com a descrição do ambiente computacional,
+dos parâmetros criptográficos e dos procedimentos de
+seleção das observações utilizadas nas execuções FHE.
+-->
 
-**Tabela 3 — Resultados exploratórios do modelo de referência**
+### 4.4. Métricas de avaliação
 
-| Métrica | Resultado |
-|---|---:|
-| ROC-AUC | 0,7382 |
-| Average Precision | 0,4799 |
-| Brier Score | 0,1379 |
-| Taxa de aprovação simulada com limiar 0,20 | 82,12% |
+A avaliação experimental considera quatro dimensões:
 
-A ROC-AUC de 0,7382 indica discriminação acima do acaso. A Average Precision de 0,4799 complementa essa leitura para a classe positiva.
+| Dimensão | Métricas |
+|---|---|
+| Desempenho preditivo | ROC-AUC e precisão média (AP) |
+| Fidelidade numérica | MAE e preservação da ordenação |
+| Estabilidade decisória | DDR e DDR máxima |
+| Custo computacional | Tempo de compilação, tempo total de execução homomórfica e tamanho reportado das chaves de bootstrapping |
 
-O Brier Score foi 0,1379. Isoladamente, ele não descreve toda a calibração do modelo.
+A estabilidade decisória também é avaliada mediante uma versão ponderada da DDR:
 
-A taxa de aprovação simulada foi 82,12% para o limiar 0,20. Não é uma recomendação de política: o estudo não avaliou custos, regulação ou resultados econômicos reais.
+$$
+D_w(\tau)=
+\frac{
+\sum_{i=1}^{N}
+w_i\mathbb{1}[d_i(\tau)\neq\hat{d}_i(\tau)]
+}{
+\sum_{i=1}^{N}w_i
+},
+$$
 
-### 4.2. Validação da inferência FHE com dados sintéticos
+em que $w_i$ corresponde ao saldo principal original do empréstimo associado à observação $i$.
 
-O primeiro experimento criptográfico utilizou uma árvore de decisão treinada sobre dados sintéticos e avaliou duas observações.
+Essa métrica permite avaliar a proporção do valor original dos empréstimos associada às decisões discordantes, sem representar diretamente perdas financeiras.
 
-As três modalidades de execução — quantizada em claro, simulação FHE e inferência FHE real — produziram classes idênticas para as duas observações avaliadas.
+## 5. Resultados e discussão
 
-O teste confirma o funcionamento inicial de compilação e inferência FHE no ambiente usado. Duas entradas não demonstram equivalência geral nem estimam divergências em conjuntos maiores.
+### 5.1. Desempenho preditivo e fidelidade numérica
 
-### 4.3. Validação da inferência FHE no UCI 350
+A Tabela 1 apresenta os resultados da inferência quantizada em texto claro sobre o conjunto de teste completo.
 
-Após a validação sintética, foi executado um experimento com o conjunto de dados financeiro, utilizando uma árvore Concrete ML com precisão `n_bits=3`.
+**Tabela 1. Desempenho preditivo e fidelidade numérica (N = 49.916).**
 
-O experimento considerou uma observação predefinida do conjunto de teste. Para essa entrada, o modelo convencional de referência e o modelo Concrete ML produziram a classe 1. Adicionalmente, as execuções do modelo Concrete ML nas modalidades quantizada em claro, simulada e criptografada apresentaram a mesma classificação.
+| Bits | ROC-AUC | AP | MAE |
+|---:|---:|---:|---:|
+| Referência | 0,6759 | 0,01157 | — |
+| 3 | 0,5000 | 0,00431 | 0,002252 |
+| 7 | 0,6203 | 0,00987 | 0,001603 |
+| 8 | 0,6688 | 0,01030 | 0,000834 |
+| 9 | 0,6759 | 0,01157 | 0,000738 |
+| 10 | 0,6759 | 0,01157 | 0,000070 |
+| 12 | 0,6759 | 0,01157 | 0,000048 |
 
-**Tabela 4 — Concordância das classificações na primeira execução UCI**
+Na configuração de 3 bits, todas as previsões assumiram valor igual a zero, eliminando a capacidade discriminatória do modelo avaliado.
 
-| Modalidade | Classe prevista |
-|---|---:|
-| Modelo convencional scikit-learn | 1 |
-| Concrete ML — `fhe="disable"` | 1 |
-| Concrete ML — `fhe="simulate"` | 1 |
-| Concrete ML — `fhe="execute"` | 1 |
+Com o aumento da precisão de quantização, observou-se recuperação das métricas preditivas e redução das diferenças numéricas em relação ao modelo de referência.
 
-Foi possível executar inferência FHE sobre uma entrada do UCI 350 e preservar a classe da execução quantizada em claro nessa entrada.
+As configurações de 9, 10 e 12 bits preservaram a ordenação das previsões de referência e os valores observados de ROC-AUC e precisão média.
 
-A coincidência de classes não prova que as árvores sejam equivalentes. Também não estabelece igualdade de probabilidades nem preservação de decisões em todo o conjunto.
+Entretanto, mesmo entre configurações com desempenho preditivo equivalente, foram observadas diferenças na fidelidade numérica. Entre 9 e 12 bits, o erro absoluto médio apresentou redução de aproximadamente 93,5%.
 
-### 4.4. Desempenho computacional inicial
+### 5.2. Estabilidade decisória
 
-A execução com o UCI 350 também permitiu registrar os tempos apresentados na Tabela 5.
+A Tabela 2 apresenta a discordância decisória máxima observada sobre o domínio dos limiares para cada configuração avaliada.
 
-**Tabela 5 — Tempos observados na primeira execução Concrete ML com `n_bits=3`**
+**Tabela 2. Discordância decisória máxima no conjunto de teste completo.**
 
-| Operação | Tempo observado |
-|---|---:|
-| Treinamento | 0,296 s |
-| Compilação | 18,478 s |
-| Predição quantizada em claro | 0,00144 s |
-| Simulação FHE | 0,360 s |
-| Predição FHE total | 2,385 s |
+| Bits | DDR máxima | DDR ponderada máxima |
+|---:|---:|---:|
+| 3 | 100,00% | 100,00% |
+| 7 | 92,97% | 94,11% |
+| 8 | 72,58% | 74,77% |
+| 9 | 72,58% | 74,77% |
+| 10 | 72,58% | 74,77% |
+| 12 | 72,58% | 74,77% |
 
-Nesta execução, a chamada FHE total foi aproximadamente 1.656 vezes mais lenta que a predição quantizada em claro.
+Apesar da redução do erro absoluto médio, a discordância decisória máxima permaneceu em 72,58% nas configurações de 9, 10 e 12 bits.
 
-Esse valor não estima o overhead médio. Ainda faltam repetições, medida de variabilidade e controle de aquecimento e cache.
+A análise da estrutura da árvore identificou uma folha contendo 36.228 observações, correspondentes a aproximadamente 72,58% do conjunto de teste.
 
-A compilação apresentou duração de 18,478 segundos, superior ao tempo de treinamento observado. Esse custo constitui uma etapa distinta da inferência e não deve ser incorporado automaticamente ao tempo por predição em cenários nos quais o circuito compilado pode ser reutilizado.
+A previsão de referência associada a essa folha foi de aproximadamente 0,00100668. Na configuração de 10 bits, a previsão correspondente foi de aproximadamente 0,00097653.
 
-O tempo de 2,385 segundos corresponde à predição FHE agregada medida pela API de alto nível. Como não foram obtidas medições separadas de cifragem, avaliação homomórfica e decifragem, não é possível atribuir o custo total a uma operação criptográfica específica.
+Embora a diferença entre esses valores seja pequena, todas as observações desse grupo apresentam decisões distintas quando o limiar de aprovação se encontra entre as duas previsões.
 
-### 4.5. Validação da infraestrutura experimental
+Esse comportamento está associado à concentração das previsões produzidas pela árvore avaliada. A redução da magnitude da perturbação diminui a extensão do intervalo de limiares em que ocorre discordância, mas não necessariamente a quantidade de observações afetadas dentro desse intervalo.
 
-A infraestrutura desenvolvida foi validada por meio de sete testes automatizados, todos concluídos com sucesso.
+Os resultados ilustram que a preservação da ordenação das previsões e a redução do erro absoluto médio não garantem a preservação das decisões para todos os limiares.
 
-Além da execução dos testes, foram implementados mecanismos de persistência de resultados, registro de dependências e documentação do ambiente. Esses componentes constituem a base necessária para a repetição dos experimentos e para a comparação futura de diferentes configurações de precisão.
+### 5.3. Discordância ponderada pelo valor dos empréstimos
 
-A obtenção reproduzível do UCI 350, o registro de hashes dos arquivos e a separação entre código, documentação e resultados locais também contribuem para a rastreabilidade do procedimento experimental.
+A utilização do saldo principal original como peso permitiu avaliar a distribuição dos valores dos empréstimos entre as observações com decisões discordantes.
 
-### 4.6. Discussão dos resultados iniciais e limitações
+Nas configurações de 8, 9, 10 e 12 bits, a discordância ponderada máxima atingiu aproximadamente 74,77%, enquanto a discordância não ponderada máxima foi de 72,58%.
 
-Os experimentos realizados demonstram a viabilidade técnica inicial da inferência criptografada com árvores de decisão no ambiente investigado. Foi possível treinar e compilar um modelo compatível com Concrete ML, executar inferência FHE real e obter concordância de classificação entre as modalidades de execução para as entradas selecionadas.
+A diferença indica que, nos respectivos intervalos de maior discordância, a proporção do valor original dos empréstimos associada às decisões alteradas foi superior à proporção de observações afetadas.
 
-Também foram observados custos computacionais substancialmente superiores aos da inferência quantizada em claro, indicando a importância de avaliar latência e eficiência nas próximas etapas.
+Esses resultados não representam perdas financeiras nem alterações observadas em decisões reais de concessão. A avaliação de consequências econômicas depende da definição de políticas operacionais e de funções financeiras adequadas.
 
-Contudo, os resultados apresentados ainda são insuficientes para confirmar as hipóteses centrais da pesquisa. Não foi realizada uma comparação sistemática entre diferentes valores de `n_bits`, tampouco foram avaliadas discordâncias decisórias associadas a políticas de aprovação de crédito.
+### 5.4. Execução homomórfica
 
-A concordância das classificações observadas nos testes iniciais não demonstra estabilidade de probabilidades, preservação de ordenação de risco ou equivalência de decisões em diferentes limiares. Além disso, as medições computacionais disponíveis correspondem a execuções isoladas e dependem das características específicas do hardware, das versões de software e das configurações utilizadas.
+Foram realizadas execuções homomórficas reais sobre cinco observações nas configurações de 9 e 10 bits.
 
-A primeira etapa demonstra viabilidade operacional do pipeline. Ela não valida as hipóteses sobre estabilidade decisória.
+**Tabela 3. Resultados das execuções homomórficas.**
 
-As próximas etapas devem comparar diferentes precisões, medir previsões pareadas e avaliar efeitos em políticas simuladas. Também precisam repetir as medições de latência.
+| Bits | Compilação (s) | FHE total (s) | MAE frente à referência | MAE frente ao quantizado |
+|---:|---:|---:|---:|---:|
+| 9 | 3,32 | 13,82 | 0,000631 | 0 |
+| 10 | 2,33 | 16,56 | 0,000078 | 0 |
 
-## 5. Próximos passos e planejamento experimental
+Para as observações avaliadas, as previsões obtidas por simulação e execução homomórfica coincidiram com as previsões quantizadas em texto claro.
 
-A primeira etapa preparou a infraestrutura e confirmou a viabilidade inicial da inferência FHE sobre dados sintéticos e uma observação do UCI 350. Esses testes são exploratórios. Eles não medem, de forma sistemática, o efeito da quantização sobre previsões ou decisões simuladas.
+Portanto, nessas execuções, as diferenças em relação ao modelo de referência já estavam presentes nas previsões do modelo quantizado. Não foram observadas diferenças adicionais associadas à execução homomórfica.
 
-As próximas etapas investigarão três dimensões: desempenho preditivo, estabilidade decisória e custo computacional. Os experimentos compararão configurações de precisão numérica, políticas simuladas de aprovação e modalidades de execução. Hiperparâmetros, limiares e demais escolhas serão definidos com treino e validação antes da avaliação no teste.
+Entre as configurações de 9 e 10 bits, observou-se redução do erro absoluto médio e aumento de aproximadamente 19,8% no tempo total da chamada de inferência homomórfica.
 
-### 5.1. Experimento 1: influência da quantização no desempenho preditivo
+O tamanho reportado das chaves de bootstrapping aumentou de aproximadamente 1,00 GB para 1,90 GB.
 
-O primeiro experimento avaliará como a precisão numérica altera as previsões de modelos compatíveis com FHE. Serão consideradas inicialmente cinco configurações:
+Essas medições caracterizam as configurações e execuções realizadas. A determinação de uma relação geral entre precisão numérica e custo computacional requer experimentos adicionais.
 
-```text
-B = {3, 4, 5, 6, 7}
-```
+## 6. Limitações
 
-Para cada valor de `n_bits`, será treinado um modelo Concrete ML com os demais hiperparâmetros fixados. Suas previsões serão comparadas às do modelo de referência em scikit-learn. A análise incluirá ROC-AUC, Average Precision, Brier Score, calibração e concordância entre previsões.
+A avaliação experimental considera uma única árvore de decisão, uma população de teste temporal e uma implementação de inferência homomórfica.
 
-A alteração de `n_bits` pode mudar não apenas a representação numérica, mas também o modelo obtido no treinamento. Por isso, diferenças entre configurações serão tratadas como efeito do pipeline de modelagem e quantização. Não serão atribuídas exclusivamente à precisão numérica.
+A baixa prevalência do evento investigado limita a interpretação das métricas preditivas. Adicionalmente, o número reduzido de execuções homomórficas reais não permite caracterizar a variabilidade dos custos computacionais ou generalizar a equivalência observada entre as modalidades de inferência.
 
-**Objetivo:** identificar a sensibilidade do desempenho preditivo às configurações de quantização.
+As diferenças numéricas observadas representam o efeito conjunto da adaptação do modelo ao Concrete ML. Não foram isoladas as contribuições individuais da quantização das entradas, dos parâmetros e das saídas.
 
-**Questão relacionada:** QP1.
+Os tempos de execução homomórfica foram obtidos por meio da interface de alto nível da biblioteca, sem isolamento sistemático dos custos de geração de chaves, cifragem, avaliação homomórfica e decifragem.
 
-### 5.2. Experimento 2: estabilidade das decisões simuladas
+A análise decisória considera políticas por limiar, sem estabelecer limiares operacionais de concessão de crédito. Os valores máximos de discordância correspondem a intervalos específicos de limiares e não representam taxas de alteração de decisões em uma operação financeira real.
 
-O segundo experimento examinará como diferenças entre previsões alteram decisões simuladas de concessão. Serão avaliadas três políticas.
+Por fim, o conjunto de dados representa empréstimos historicamente originados. A avaliação não permite estabelecer efeitos causais sobre novas concessões, e o saldo principal original não corresponde necessariamente à exposição no momento da inadimplência ou à perda financeira realizada.
 
-Na política por limiar, uma observação será aprovada quando o escore usado como PD estiver abaixo ou igual ao limiar definido na validação:
+## 7. Conclusão e trabalhos futuros
 
-```text
-a_i = 1, se p_hat_i <= tau; caso contrário, 0
-```
+Este trabalho investigou a relação entre perturbações numéricas e estabilidade de decisões por limiar no contexto da inferência homomórfica de risco de crédito.
 
-Nessa expressão, `p_hat_i` representa o escore, `tau` o limiar e `a_i` a decisão binária. Esse uso como PD dependerá de uma verificação prévia de semântica e calibração. Caso o escore não possa ser interpretado como probabilidade, ele será tratado apenas como escore de risco.
+Na árvore de decisão avaliada, configurações de quantização que preservaram a ordenação das previsões e as métricas preditivas apresentaram diferenças numéricas capazes de alterar decisões em intervalos específicos de limiares.
 
-Na política por capacidade fixa, serão aprovadas as observações com menores escores até atingir uma fração definida da carteira. O desempate será determinístico. Essa política permite observar se alterações na ordenação mudam a composição do grupo aprovado.
+As execuções homomórficas realizadas apresentaram resultados equivalentes aos da inferência quantizada em texto claro para as observações avaliadas.
 
-Na política de utilidade simulada, será usada uma função ilustrativa de retorno esperado:
+Os resultados indicam, para o modelo investigado, a importância de avaliar a estabilidade das decisões em conjunto com a fidelidade numérica, o desempenho preditivo e os custos computacionais.
 
-```text
-U_i = EAD_i * ((1 - p_hat_i) * r - p_hat_i * LGD) - c_i
-```
-
-`EAD_i` representa a exposição estimada, `r` uma taxa hipotética de receita, `LGD` a perda dado o inadimplemento e `c_i` um custo da operação. Esses parâmetros serão premissas experimentais. Eles não representam condições observadas de uma instituição financeira.
-
-A principal medida será a discordância entre duas configurações:
-
-```text
-D(A, B) = (número de casos em que a_i^A != a_i^B) / N
-```
-
-Também serão examinadas a taxa de aprovação, a composição dos grupos aprovados e a concentração das discordâncias perto dos limiares. Capacidades, limiares e parâmetros financeiros serão definidos na validação.
-
-**Objetivo:** verificar se diferenças associadas à quantização alteram decisões simuladas.
-
-**Questão relacionada:** QP2.
-
-**Hipóteses relacionadas:** H1 e H2.
-
-### 5.3. Experimento 3: custo computacional da inferência FHE
-
-O terceiro experimento medirá o custo das configurações selecionadas. A comparação incluirá inferência quantizada em claro, simulação FHE e inferência FHE real do mesmo modelo compilado.
-
-Serão registrados tempo de compilação e tempo de inferência. Quando a API permitir, o protocolo também separará geração de chaves, cifragem, avaliação homomórfica e decifragem. Caso essa separação não esteja disponível, o relatório identificará a medida como tempo total da chamada FHE.
-
-As medições serão repetidas. Serão reportadas mediana e dispersão, em vez de um único tempo. Como a execução FHE é custosa, o benchmark poderá usar uma amostra reduzida e reprodutível, estratificada por faixa de risco e proximidade dos limiares.
-
-Tempo de compilação e tempo de inferência serão apresentados separadamente. As interpretações também informarão hardware, versões das bibliotecas, parâmetros criptográficos e tamanho da amostra.
-
-**Objetivo:** caracterizar o custo das configurações e seus limites práticos para inferência protegida.
-
-**Questão relacionada:** QP3.
-
-**Hipótese relacionada:** H3.
-
-### 5.4. Experimento 4: análise integrada dos compromissos
-
-O último experimento reunirá os resultados anteriores. Cada configuração será descrita por indicadores de desempenho preditivo, discordância decisória e latência FHE.
-
-Visualizações comparativas mostrarão os compromissos entre essas dimensões. Quando os dados permitirem, será usada análise de dominância de Pareto para identificar configurações não dominadas, isto é, alternativas que não melhoram uma dimensão sem piorar outra.
-
-Não se pressupõe uma configuração universalmente ótima. A escolha pode depender da política simulada e da restrição de latência considerada.
-
-**Objetivo:** identificar configurações com compromissos favoráveis entre desempenho, estabilidade e custo.
-
-**Questão relacionada:** QP4.
-
-**Hipótese relacionada:** H3.
-
-### 5.5. Organização dos experimentos
-
-| Experimento | Variável principal | Indicadores | Foco da etapa |
-|---|---|---|---|
-| 1. Quantização | `n_bits` de 3 a 7 | ROC-AUC, AP, Brier, calibração e consistência | Sensibilidade preditiva à precisão |
-| 2. Estabilidade decisória | Política e configuração do modelo | Discordância, aprovação e distância ao limiar | Efeito das diferenças preditivas nas decisões |
-| 3. Custo computacional | Configuração FHE e modalidade de execução | Compilação, latência e dispersão | Caracterização do custo computacional |
-| 4. Análise integrada | Combinação das configurações | Desempenho, discordância e latência | Compromissos e alternativas não dominadas |
-
-### 5.6. Critérios de avaliação das hipóteses
-
-H1 será avaliada pela comparação entre desempenho agregado e discordância decisória. Configurações com métricas preditivas semelhantes, mas decisões diferentes, constituirão evidência compatível com a hipótese.
-
-H2 será avaliada pela distância entre os escores e os limiares de aprovação. A análise verificará se decisões divergentes se concentram mais perto dessas fronteiras do que decisões concordantes.
-
-H3 será avaliada pela relação entre precisão, estabilidade e custo. A existência de configurações com perfis distintos nessas dimensões caracterizará o compromisso investigado.
-
-Quando possível, serão usados intervalos de confiança por reamostragem. Eles evitam conclusões baseadas apenas em diferenças pontuais.
-
-### 5.7. Limitações previstas
-
-O UCI 350 representa clientes que já possuíam cartão. Ele não permite estimar o efeito causal de uma política para novos solicitantes nem a rentabilidade real de uma carteira.
-
-Os escores dos modelos só serão usados como probabilidades de inadimplência após verificação de semântica e calibração. As políticas são instrumentos experimentais, não recomendações de concessão de crédito.
-
-Por fim, tempos medidos em um computador não se generalizam diretamente para ambientes de produção. Arquitetura, versão de software, tamanho do lote e parâmetros criptográficos podem alterar a latência observada.
+Como trabalhos futuros, pretende-se ampliar a avaliação para outros modelos preditivos, implementações baseadas em CKKS e políticas de decisão de crédito, investigando os compromissos entre estabilidade decisória, impacto econômico e eficiência computacional.
 
 ## Referências
 
-ALLAVARPU, V. V. L. D.; NARESH, V. S.; MOHAN, A. K. Neural Network-Driven Privacy-Preserving Credit Risk Analysis: A Homomorphic Encryption Approach. *Contemporary Mathematics*, v. 6, n. 1, 2025. DOI: https://doi.org/10.37256/cm.6120255949.
+Allavarpu et al. (2025). Neural Network-Driven Privacy-Preserving Credit Risk Analysis: A Homomorphic Encryption Approach. Contemporary Mathematics. Disponível em: https://doi.org/10.37256/cm.6120255949.
 
-CONG, K.; KANG, J.; NICOLAS, G.; PARK, J. *Faster Private Decision Tree Evaluation for Batched Input from Homomorphic Encryption*. [Dados bibliográficos de publicação a confirmar].
+Cong, K., Kang, J., Nicolas, G. e Park, J. Faster Private Decision Tree Evaluation for Batched Input from Homomorphic Encryption. [Dados bibliográficos a confirmar.]
 
-FRERY, J. et al. *Privacy-Preserving Tree-Based Inference with TFHE*. arXiv:2303.01254, 2023. Disponível em: https://arxiv.org/abs/2303.01254.
+Frery, J. et al. (2023). Privacy-Preserving Tree-Based Inference with TFHE. arXiv:2303.01254. Disponível em: https://arxiv.org/abs/2303.01254.
 
-SHUKLA, N.; PANDYA, M. A.; SAMANTH, S. Fully Homomorphic Encryption and Artificial Intelligence: A Review of Architectures, Optimizations, and Distributed Privacy. *IEEE Access*, 2026. DOI: https://doi.org/10.1109/ACCESS.2026.3746630.
+Freddie Mac. Single-Family Loan-Level Dataset. Disponível em: https://www.freddiemac.com/research/datasets/sf-loanlevel-dataset.
 
-YILMAZ, E. et al. Homomorphic Encryption in Finance: Training and Inference on Encrypted Data with Concrete ML. *Afyon Kocatepe University Journal of Science and Engineering*, v. 26, p. 64–77, 2026. DOI: https://doi.org/10.35414/akufemubid.1686923.
-
-UCI MACHINE LEARNING REPOSITORY. *Default of Credit Card Clients*. Dataset ID 350. Disponível em: https://archive.ics.uci.edu/dataset/350/default+of+credit+card+clients.
+Yılmaz et al. (2026). Homomorphic Encryption in Finance: Training and Inference on Encrypted Data with Concrete ML. Disponível em: https://doi.org/10.35414/akufemubid.1686923.
