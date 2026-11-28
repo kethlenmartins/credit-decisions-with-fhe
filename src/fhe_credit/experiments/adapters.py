@@ -125,10 +125,21 @@ class LegacyReportImportAdapter:
         return ["imported_report.json", "import_record.json"]
 
 
+@dataclass(frozen=True)
+class FreddieMacDecisionTreeAdapter:
+    identifier: str = "freddie-mac-decision-tree-v1"
+    supports_computational_resume: bool = False
+
+    def run(self, config: dict[str, Any], output_directory: Path) -> list[str]:
+        from .freddie_tree import run_n01
+        return run_n01(config, output_directory)
+
+
 ADAPTERS: dict[str, Adapter] = {
     SyntheticDecisionStabilityAdapter.identifier: SyntheticDecisionStabilityAdapter(),
     HistoricalUciPlaintextBaselineAdapter.identifier: HistoricalUciPlaintextBaselineAdapter(),
     LegacyReportImportAdapter.identifier: LegacyReportImportAdapter(),
+    FreddieMacDecisionTreeAdapter.identifier: FreddieMacDecisionTreeAdapter(),
 }
 
 

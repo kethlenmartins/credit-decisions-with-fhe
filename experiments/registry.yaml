@@ -1,5 +1,18 @@
 schema_version: "1.0"
 experiments:
+  - experiment_id: n01-freddie-mac-decision-tree
+    name: "N01 — árvore Freddie Mac: sklearn e Concrete ML"
+    area: 04_numerical_fidelity
+    experiment_directory: experiments/04_numerical_fidelity/N01_freddie_mac_decision_tree
+    scientific_question: Como a quantização e a execução FHE alteram as saídas da mesma árvore exploratória Freddie Mac?
+    hypothesis: null
+    dependencies: [numpy, pandas, scikit-learn, Concrete ML 1.9.0]
+    configuration: experiments/04_numerical_fidelity/N01_freddie_mac_decision_tree/config.yaml
+    executor: experiments/04_numerical_fidelity/N01_freddie_mac_decision_tree/run.py
+    notebook: experiments/04_numerical_fidelity/N01_freddie_mac_decision_tree/experiment_public.ipynb
+    status: EXPLORATORY
+    expected_artifacts: [metrics.json, fidelity.json, dataset_summary.json, tree_summary.json, prepared_dataset.npz, sklearn_model.joblib, progress.log]
+    visibility: PRIVATE
   - experiment_id: historical-fhe-smoke-synthetic
     name: Smoke test FHE sintético histórico
     area: historical

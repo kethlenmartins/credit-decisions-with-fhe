@@ -1,0 +1,32 @@
+schema_version: "1.0"
+experiment_id: n01-freddie-mac-decision-tree
+configuration_id: cfg-n01-freddie-mac-decision-tree-v1
+description: >
+  Investigação EXPLORATORY de fidelidade numérica entre uma árvore sklearn e
+  Concrete ML nos samples Freddie Mac, com target observado em 12 meses.
+scientific_status: EXPLORATORY
+dependencies: [numpy, pandas, scikit-learn, concrete-ml==1.9.0]
+parameters:
+  seed: 42
+  horizon_months: 12
+  target_scenario: S01
+  training_vintages: [2015, 2016, 2017]
+  validation_vintages: [2019]
+  test_vintages: [2021]
+  features: [credit_score, original_ltv, original_cltv, original_dti, original_upb, original_loan_term, number_of_borrowers]
+  missing_codes: [999, 9999]
+  model: {max_depth: 3, min_samples_leaf: 100, random_state: 42}
+  quantization_bits: [3, 4, 5, 6, 7]
+  calibration_sample_size: 1000
+  paired_evaluation_size: 10000
+  fhe_bits: 3
+  fhe_sample_size: 5
+input_artifacts:
+  - {path: datasets/sample_2015.zip, role: sample_2015, required: true}
+  - {path: datasets/sample_2016.zip, role: sample_2016, required: true}
+  - {path: datasets/sample_2017.zip, role: sample_2017, required: true}
+  - {path: datasets/sample_2019.zip, role: sample_2019, required: true}
+  - {path: datasets/sample_2021.zip, role: sample_2021, required: true}
+  - {path: datasets/file_headers_july_2026.zip, role: official_headers, required: true}
+execution: {mode: execute, adapter: freddie-mac-decision-tree-v1, checkpointing: false}
+publication: PRIVATE

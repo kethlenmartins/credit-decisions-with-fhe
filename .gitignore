@@ -33,6 +33,9 @@ experiments/**/results/runs/
 experiments/**/results/analyses/
 experiments/**/results/public/*
 !experiments/**/results/public/.gitkeep
+# Documentos científicos privados do N01; a versão pública é experiment_public.ipynb.
+experiments/04_numerical_fidelity/N01_freddie_mac_decision_tree/report.md
+experiments/04_numerical_fidelity/N01_freddie_mac_decision_tree/experiment.ipynb
 checkpoints/
 logs/
 state/
